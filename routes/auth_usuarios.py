@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from db.conexion import session_local
 from db.models.usuarios import Usuarios
 from db.schemas.usuarios import CredencialesUsuario
+from passlib.context import CryptContext
 
 router = APIRouter(
     prefix="/auth",
@@ -17,18 +18,22 @@ def obtener_bd():
     finally:
         db.close()
 
-@router.post("/login", status_code= status.HTTP_200_OK)
-async def login(credentias: CredencialesUsuario, db: Session = Depends(obtener_bd)):
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    usuario = db.query(Usuarios).filter(Usuarios.email == credentias.email).frist()
+def verificar_contraseña(contraseña_plana: str, contraseña_encriptada: str) -> bool:
+    return pwd_context.verify(contraseña_plana, contraseña_encriptada)
 
-    contra = db.query(Usuarios).filter(Usuarios.password == credentias.password).firts()
+@router.post("/login", status_code=status.HTTP_200_OK)
+async def login(credenciales: CredencialesUsuario, db: Session = Depends(obtener_bd)):
 
-    if not usuario and not contra:
+    usuario = db.query(Usuarios).filter(Usuarios.email == credenciales.email).first()
+
+    if not usuario or not verificar_contraseña(credenciales.password, usuario.password):
         raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED,
-            detail= "Correo o contraseña incorrectos"
-
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Correo o contraseña incorrectos",
+            headers={"WWW-Authenticate": "Bearer"}
         )
+    
     
     return {"Mensaje": "Inicio de sesión exitoso"}
