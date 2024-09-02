@@ -15,6 +15,10 @@ class ObtenerUsuario(BaseModel):
     class Config:
         from_attributes = True
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
 class CredencialesUsuario(BaseModel):
     email: EmailStr = Field(..., min_length=1)
     password: str = Field(..., min_length=8)

@@ -44,3 +44,16 @@ async def crear_usuario(entrada: CrearUsuario, db: Session = Depends(obtener_bd)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Error al crear al usuario")
     
     return usuario
+
+@router.get("/", response_model=list[ObtenerUsuario], status_code=status.HTTP_200_OK)
+async def obtener_usuarios(db: Session = Depends(obtener_bd)):
+    usuarios = db.query(Usuarios).all()
+    return usuarios
+
+@router.get("/{id}", response_model=ObtenerUsuario, status_code=status.HTTP_200_OK)
+async def id_usuarios(id: int, db: Session = Depends(obtener_bd)):
+    usuario = db.query(Usuarios).filter_by(id=id).first()
+    if not usuario:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+    
+    return usuario
