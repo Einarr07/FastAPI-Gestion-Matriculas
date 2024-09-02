@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from db.conexion import Base, engine
 from starlette.responses import RedirectResponse
-from routes import usuarios, auth_usuarios
+from routes import usuarios, auth_usuarios, materias
 
 # Crear todas las tablas en la base de datos
 Base.metadata.create_all(bind=engine)
@@ -13,6 +13,7 @@ app = FastAPI(
 # Routers
 app.include_router(usuarios.router)
 app.include_router(auth_usuarios.router)
+app.include_router(materias.router)
 
 @app.get("/")
 def main():

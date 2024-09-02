@@ -1,8 +1,6 @@
 from sqlalchemy import Column, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 from ..conexion import Base
-from .estudiantes import Estudiantes  
-from .materias import Materias
 
 class Matriculas(Base):
     __tablename__ = "matriculas"  
@@ -11,5 +9,6 @@ class Matriculas(Base):
     id_materia = Column(Integer, ForeignKey("materias.id"), nullable=False)
     descripcion = Column(String(200), nullable=False)
 
+    # Relación inversa con Estudiantes
     estudiante = relationship("Estudiantes", back_populates="matriculas")
     materia = relationship("Materias", back_populates="matriculas")
