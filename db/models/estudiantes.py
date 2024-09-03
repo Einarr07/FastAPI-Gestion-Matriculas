@@ -7,7 +7,8 @@ class Estudiantes(Base):
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     nombre = Column(String(20), nullable=False)
-    cedula = Column(BigInteger, nullable=False)
+    apellido = Column(String(20), nullable=False)
+    cedula = Column(BigInteger, nullable=False, unique=True)
     fecha_nacimiento = Column(Date, nullable=False)
     ciudad = Column(String(20), nullable=False)  
     direccion = Column(String(20), nullable=False)
