@@ -59,9 +59,9 @@ async def id_matricula(id: int, db: Session = Depends(obtener_bd)):
     
 
 @router.put("/{id}", status_code = status.HTTP_202_ACCEPTED)
-async def actualizar_matricula(id: id, entrada: ActualizarMatricula, db: Session = Depends(obtener_bd)):
+async def actualizar_matricula(id: int, entrada: ActualizarMatricula, db: Session = Depends(obtener_bd)):
     try:
-        matricula = db.query(Matriculas).filter_by(id = id).first()
+        matricula = db.query(Matriculas).filter_by(id=id).first()
         if not matricula:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="La matricula no existe")
         

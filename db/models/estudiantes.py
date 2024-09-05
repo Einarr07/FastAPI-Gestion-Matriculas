@@ -11,9 +11,9 @@ class Estudiantes(Base):
     cedula = Column(BigInteger, nullable=False, unique=True)
     fecha_nacimiento = Column(Date, nullable=False)
     ciudad = Column(String(20), nullable=False)  
-    direccion = Column(String(20), nullable=False)
+    direccion = Column(String(50), nullable=False)
     telefono = Column(String(10), unique=True, nullable=False)
-    email = Column(String(30), unique=True, nullable=False)
+    email = Column(String(50), unique=True, nullable=False)
 
     
     usuarios = relationship("Usuarios", back_populates="estudiantes")
