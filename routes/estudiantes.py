@@ -43,16 +43,39 @@ async def crear_estudiante(entrada: CrearEstudiante, db: Session = Depends(obten
 
 @router.get("/", response_model=list[ObtenerEstudiante], status_code=status.HTTP_200_OK)
 async def obtener_estudiante(db: Session = Depends(obtener_bd)):
-    estudiantes = db.query(Estudiantes).all()
-    return estudiantes
+    try:
+        estudiantes = db.query(Estudiantes).all()
+        return estudiantes
+    
+    except HTTPException as http_exc:
+        raise http_exc
+    
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error obtener estudiantes: {e}"
+        )
 
 @router.get("/{cedula}", response_model=ObtenerEstudiante, status_code=status.HTTP_200_OK)
 async def cedula_estudiante(cedula: int, db: Session = Depends(obtener_bd)):
-    estudiante = db.query(Estudiantes).filter_by(cedula=cedula).first()
-    if not estudiante:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Estudiante no encontrado")
+    try:
+        estudiante = db.query(Estudiantes).filter_by(cedula=cedula).first()
+        if not estudiante:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Estudiante no encontrado")
+        
+        return estudiante
     
-    return estudiante
+    except HTTPException as http_exc:
+        raise http_exc
+    
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener estudiante: {e}"
+        )
+    
 
 @router.put("/{id}", status_code=status.HTTP_202_ACCEPTED)
 async def actualizar_estudiante(id: int, entrada: ActualizarEstudiante, db: Session = Depends(obtener_bd)):
@@ -90,13 +113,22 @@ async def actualizar_estudiante(id: int, entrada: ActualizarEstudiante, db: Sess
 
 @router.delete("/{cedula}", response_model=EliminarEstudiante, status_code=status.HTTP_200_OK)
 async def eliminar_estudiante(cedula: int, db: Session = Depends(obtener_bd)):
-    estudiante = db.query(Estudiantes).filter_by(cedula=cedula).first()
-    if not estudiante:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Estudiante no encontrado")
+    try:
+        estudiante = db.query(Estudiantes).filter_by(cedula=cedula).first()
+        if not estudiante:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Estudiante no encontrado")
 
-    db.delete(estudiante)
-    db.commit()
-    respuesta = EliminarEstudiante(mensaje="Estudiante eliminado con exito")
-    return respuesta
-
+        db.delete(estudiante)
+        db.commit()
+        respuesta = EliminarEstudiante(mensaje="Estudiante eliminado con exito")
+        return respuesta
     
+    except HTTPException as http_exc:
+        raise http_exc
+    
+    except Exception as e:
+        db.rollback()  # Rollback en caso de error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al eliminar estudiante: {e}"
+        )

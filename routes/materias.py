@@ -40,39 +40,83 @@ async def crear_materia(entrada: CrearMateria, db: Session = Depends(obtener_bd)
 
 @router.get("/", response_model=list[ObtenerMateria], status_code=status.HTTP_200_OK)
 async def obtener_materia(db: Session = Depends(obtener_bd)):
-    materias = db.query(Materias).all()
-    return materias
+    try:
+        materias = db.query(Materias).all()
+        return materias
+    
+    except HTTPException as http_exc:
+        raise http_exc
 
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener materia: {e}"
+        )
+    
 @router.get("/{codigo}", response_model=ObtenerMateria, status_code=status.HTTP_200_OK)
 async def id_materia(codigo: int, db: Session = Depends(obtener_bd)):
-    materia = db.query(Materias).filter_by(codigo=codigo).first()
-    if not materia:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Materia no encontrada")
+    try:
+        materia = db.query(Materias).filter_by(codigo=codigo).first()
+        if not materia:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Materia no encontrada")
     
-    return materia
+        return materia
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener materia: {e}"
+        )
 
 @router.put("/{codigo}", response_model=ObtenerMateria, status_code=status.HTTP_202_ACCEPTED)
 async def actualizar_materia(codigo: int, entrada: ActualizarMatria, db: Session = Depends(obtener_bd)):
-    materia = db.query(Materias).filter_by(codigo=codigo).first()
-    if not materia:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Materia no encontrada")
+    try:
+        materia = db.query(Materias).filter_by(codigo=codigo).first()
+        if not materia:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Materia no encontrada")
 
-    materia.nombre = entrada.nombre
-    materia.codigo = entrada.codigo
-    materia.descripcion = entrada.descripcion
-    materia.creditos = entrada.creditos
-    db.commit()
-    db.refresh(materia)
+        materia.nombre = entrada.nombre
+        materia.codigo = entrada.codigo
+        materia.descripcion = entrada.descripcion
+        materia.creditos = entrada.creditos
+        db.commit()
+        db.refresh(materia)
 
-    return materia
+        return materia
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al actualizar materia: {e}"
+        )
 
 @router.delete("/{codigo}", response_model=EliminarMateria, status_code=status.HTTP_200_OK)
 async def eliminar_materia(codigo:int, db: Session = Depends(obtener_bd)):
-    materia = db.query(Materias).filter_by(codigo=codigo).first()
-    if not materia:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Materia no encontrada")
+    try:
+        materia = db.query(Materias).filter_by(codigo=codigo).first()
+        if not materia:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Materia no encontrada")
+        
+        db.delete(materia)
+        db.commit()
+        respuesta = EliminarMateria(mensaje="Materia eliminada exitosamente")
+        return respuesta
     
-    db.delete(materia)
-    db.commit()
-    respuesta = EliminarMateria(mensaje="Materia eliminada exitosamente")
-    return respuesta
+    except HTTPException as http_exc:
+        raise http_exc
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al eliminar materia: {e}"
+        )

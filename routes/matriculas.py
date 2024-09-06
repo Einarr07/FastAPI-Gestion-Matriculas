@@ -38,8 +38,19 @@ async def crear_matricula(entrada: CrearMatricula, db: Session = Depends(obtener
 
 @router.get("/", response_model=list[ObtenerMatricula], status_code = status.HTTP_200_OK)
 async def obtener_matriculas(db: Session = Depends(obtener_bd)):
-    matriculas = db.query(Matriculas).all()
-    return matriculas
+    try:
+        matriculas = db.query(Matriculas).all()
+        return matriculas
+    
+    except HTTPException as http_exc:
+        raise http_exc
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener materia: {e}"
+        )
 
 @router.get("/{id}", response_model=ObtenerMatricula, status_code = status.HTTP_200_OK)
 async def id_matricula(id: int, db: Session = Depends(obtener_bd)):
@@ -49,6 +60,9 @@ async def id_matricula(id: int, db: Session = Depends(obtener_bd)):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="La matricula no existe")
         
         return matricula
+    
+    except HTTPException as http_exc:
+        raise http_exc
     
     except Exception as e:
         db.rollback()
@@ -74,6 +88,9 @@ async def actualizar_matricula(id: int, entrada: ActualizarMatricula, db: Sessio
 
         return matricula
     
+    except HTTPException as http_exc:
+        raise http_exc
+    
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -97,6 +114,9 @@ async def eliminar_matricula(id: int, db: Session = Depends(obtener_bd)):
         respuesta = EliminarMatricula(mensaje="Matricula eliminada exitosamente")
         return respuesta
 
+    except HTTPException as http_exc:
+        raise http_exc
+    
     except Exception as e:
         db.rollback()
         raise HTTPException(
