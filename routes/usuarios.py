@@ -4,6 +4,7 @@ from db.conexion import session_local
 from db.schemas.usuarios import CrearUsuario, ObtenerUsuario
 from db.models.usuarios import Usuarios
 from passlib.context import CryptContext
+from .auth_usuarios import obtener_usuario_actual
 
 router = APIRouter(
     prefix="/usuarios",
@@ -12,7 +13,6 @@ router = APIRouter(
 )
 
 def obtener_bd():
-    
     db = session_local()
     try:
         yield db
@@ -46,12 +46,12 @@ async def crear_usuario(entrada: CrearUsuario, db: Session = Depends(obtener_bd)
     return usuario
 
 @router.get("/", response_model=list[ObtenerUsuario], status_code=status.HTTP_200_OK)
-async def obtener_usuarios(db: Session = Depends(obtener_bd)):
+async def obtener_usuarios(db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     usuarios = db.query(Usuarios).all()
     return usuarios
 
 @router.get("/{id}", response_model=ObtenerUsuario, status_code=status.HTTP_200_OK)
-async def id_usuarios(id: int, db: Session = Depends(obtener_bd)):
+async def id_usuarios(id: int, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     usuario = db.query(Usuarios).filter_by(id=id).first()
     if not usuario:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")

@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from db.conexion import session_local
 from db.models.estudiantes import Estudiantes
 from db.schemas.estudiantes import CrearEstudiante, ObtenerEstudiante, ActualizarEstudiante, EliminarEstudiante
+from .auth_usuarios import obtener_usuario_actual
 
 router = APIRouter(
     prefix="/estudiantes",
@@ -18,7 +19,7 @@ def obtener_bd():
         db.close()
 
 @router.post("/", status_code = status.HTTP_201_CREATED)
-async def crear_estudiante(entrada: CrearEstudiante, db: Session = Depends(obtener_bd)):
+async def crear_estudiante(entrada: CrearEstudiante, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     estudiante = Estudiantes(
         nombre = entrada.nombre,
         apellido = entrada.apellido,
@@ -42,7 +43,7 @@ async def crear_estudiante(entrada: CrearEstudiante, db: Session = Depends(obten
     return estudiante
 
 @router.get("/", response_model=list[ObtenerEstudiante], status_code=status.HTTP_200_OK)
-async def obtener_estudiante(db: Session = Depends(obtener_bd)):
+async def obtener_estudiante(db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         estudiantes = db.query(Estudiantes).all()
         return estudiantes
@@ -58,7 +59,7 @@ async def obtener_estudiante(db: Session = Depends(obtener_bd)):
         )
 
 @router.get("/{cedula}", response_model=ObtenerEstudiante, status_code=status.HTTP_200_OK)
-async def cedula_estudiante(cedula: int, db: Session = Depends(obtener_bd)):
+async def cedula_estudiante(cedula: int, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         estudiante = db.query(Estudiantes).filter_by(cedula=cedula).first()
         if not estudiante:
@@ -77,10 +78,10 @@ async def cedula_estudiante(cedula: int, db: Session = Depends(obtener_bd)):
         )
     
 
-@router.put("/{id}", status_code=status.HTTP_202_ACCEPTED)
-async def actualizar_estudiante(id: int, entrada: ActualizarEstudiante, db: Session = Depends(obtener_bd)):
+@router.put("/{cedula}", status_code=status.HTTP_202_ACCEPTED)
+async def actualizar_estudiante(cedula: int, entrada: ActualizarEstudiante, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
-        estudiante = db.query(Estudiantes).filter_by(id=id).first()
+        estudiante = db.query(Estudiantes).filter_by(cedula=cedula).first()
         
         if not estudiante:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Estudiante no encontrado")
@@ -112,7 +113,7 @@ async def actualizar_estudiante(id: int, entrada: ActualizarEstudiante, db: Sess
 
 
 @router.delete("/{cedula}", response_model=EliminarEstudiante, status_code=status.HTTP_200_OK)
-async def eliminar_estudiante(cedula: int, db: Session = Depends(obtener_bd)):
+async def eliminar_estudiante(cedula: int, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         estudiante = db.query(Estudiantes).filter_by(cedula=cedula).first()
         if not estudiante:

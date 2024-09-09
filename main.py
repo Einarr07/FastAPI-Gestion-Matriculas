@@ -11,11 +11,11 @@ app = FastAPI(
 )
 
 # Routers
-app.include_router(usuarios.router)
-app.include_router(auth_usuarios.router)
-app.include_router(materias.router)
-app.include_router(estudiantes.router)
-app.include_router(matriculas.router)
+app.include_router(usuarios.router, prefix="/api")
+app.include_router(auth_usuarios.router, prefix="/api")
+app.include_router(materias.router, prefix="/api")
+app.include_router(estudiantes.router, prefix="/api")
+app.include_router(matriculas.router, prefix="/api")
 
 @app.get("/")
 def main():

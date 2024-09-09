@@ -2,12 +2,11 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from db.conexion import session_local
 from db.models.usuarios import Usuarios
-from db.schemas.usuarios import CredencialesUsuario, Token, ObtenerUsuario
+from db.schemas.usuarios import Token, ObtenerUsuario
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from datetime import timedelta, datetime
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
 from typing import Optional
 import os
 from dotenv import load_dotenv
@@ -19,11 +18,15 @@ router = APIRouter(
 )
 
 load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("Secret_key no está configurada en el archivo .env")
+
+ALGORITHM = os.getenv("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -58,13 +61,18 @@ def obtener_usuario_actual(token: str = Depends(oauth2_scheme), db: Session = De
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception
-    except JWTError:
-        raise credentials_exception
-
+    except JWTError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=f"Error al decodificar el token: {str(e)}",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    # Verificar existencia del usuario
     usuario = db.query(Usuarios).filter(Usuarios.email == email).first()
     if usuario is None:
         raise credentials_exception
     return usuario
+
 
 @router.post("/login", response_model=Token, status_code= status.HTTP_200_OK)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(obtener_bd)):
@@ -86,6 +94,16 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = 
         "token_type": "bearer",
     }
 
-@router.get("/usuarios/me", response_model=ObtenerUsuario)
+@router.get("/usuarios/yo", response_model=ObtenerUsuario)
 async def leer_usuarios_me(usuario_actual: Usuarios = Depends(obtener_usuario_actual)):
-    return usuario_actual
+    try:
+        return usuario_actual
+    
+    except HTTPException as http_exc:
+        raise http_exc
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error obtener estudiantes: {e}"
+        )

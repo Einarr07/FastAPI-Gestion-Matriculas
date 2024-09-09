@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from db.conexion import session_local
 from db.models.materias import Materias
 from db.schemas.materias import CrearMateria, ObtenerMateria, ActualizarMatria, EliminarMateria
+from .auth_usuarios import obtener_usuario_actual
 
 router = APIRouter(
     prefix="/materias",
@@ -18,7 +19,7 @@ def obtener_bd():
         db.close()
 
 @router.post("/", status_code= status.HTTP_201_CREATED)
-async def crear_materia(entrada: CrearMateria, db: Session = Depends(obtener_bd)):
+async def crear_materia(entrada: CrearMateria, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     materia = Materias(
         nombre = entrada.nombre,
         codigo = entrada.codigo,
@@ -39,7 +40,7 @@ async def crear_materia(entrada: CrearMateria, db: Session = Depends(obtener_bd)
     return materia
 
 @router.get("/", response_model=list[ObtenerMateria], status_code=status.HTTP_200_OK)
-async def obtener_materia(db: Session = Depends(obtener_bd)):
+async def obtener_materia(db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         materias = db.query(Materias).all()
         return materias
@@ -55,7 +56,7 @@ async def obtener_materia(db: Session = Depends(obtener_bd)):
         )
     
 @router.get("/{codigo}", response_model=ObtenerMateria, status_code=status.HTTP_200_OK)
-async def id_materia(codigo: int, db: Session = Depends(obtener_bd)):
+async def id_materia(codigo: int, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         materia = db.query(Materias).filter_by(codigo=codigo).first()
         if not materia:
@@ -74,7 +75,7 @@ async def id_materia(codigo: int, db: Session = Depends(obtener_bd)):
         )
 
 @router.put("/{codigo}", response_model=ObtenerMateria, status_code=status.HTTP_202_ACCEPTED)
-async def actualizar_materia(codigo: int, entrada: ActualizarMatria, db: Session = Depends(obtener_bd)):
+async def actualizar_materia(codigo: int, entrada: ActualizarMatria, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         materia = db.query(Materias).filter_by(codigo=codigo).first()
         if not materia:
@@ -100,7 +101,7 @@ async def actualizar_materia(codigo: int, entrada: ActualizarMatria, db: Session
         )
 
 @router.delete("/{codigo}", response_model=EliminarMateria, status_code=status.HTTP_200_OK)
-async def eliminar_materia(codigo:int, db: Session = Depends(obtener_bd)):
+async def eliminar_materia(codigo:int, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         materia = db.query(Materias).filter_by(codigo=codigo).first()
         if not materia:

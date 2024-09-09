@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from db.conexion import session_local
 from db.models.matriculas import Matriculas
 from db.schemas.matriculas import CrearMatricula, ObtenerMatricula, ActualizarMatricula, EliminarMatricula
+from .auth_usuarios import obtener_usuario_actual
 
 router = APIRouter(
     prefix="/matriculas",
@@ -18,7 +19,7 @@ def obtener_bd():
         db.close()
 
 @router.post("/", status_code = status.HTTP_201_CREATED)
-async def crear_matricula(entrada: CrearMatricula, db: Session = Depends(obtener_bd)):
+async def crear_matricula(entrada: CrearMatricula, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     matricula = Matriculas(
         id_estudiante = entrada.id_estudiante,
         id_materia = entrada.id_materia,
@@ -37,7 +38,7 @@ async def crear_matricula(entrada: CrearMatricula, db: Session = Depends(obtener
     return matricula
 
 @router.get("/", response_model=list[ObtenerMatricula], status_code = status.HTTP_200_OK)
-async def obtener_matriculas(db: Session = Depends(obtener_bd)):
+async def obtener_matriculas(db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         matriculas = db.query(Matriculas).all()
         return matriculas
@@ -53,7 +54,7 @@ async def obtener_matriculas(db: Session = Depends(obtener_bd)):
         )
 
 @router.get("/{id}", response_model=ObtenerMatricula, status_code = status.HTTP_200_OK)
-async def id_matricula(id: int, db: Session = Depends(obtener_bd)):
+async def id_matricula(id: int, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         matricula = db.query(Matriculas).filter_by(id = id).first()
         if not matricula:
@@ -73,7 +74,7 @@ async def id_matricula(id: int, db: Session = Depends(obtener_bd)):
     
 
 @router.put("/{id}", status_code = status.HTTP_202_ACCEPTED)
-async def actualizar_matricula(id: int, entrada: ActualizarMatricula, db: Session = Depends(obtener_bd)):
+async def actualizar_matricula(id: int, entrada: ActualizarMatricula, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try:
         matricula = db.query(Matriculas).filter_by(id=id).first()
         if not matricula:
@@ -99,7 +100,7 @@ async def actualizar_matricula(id: int, entrada: ActualizarMatricula, db: Sessio
         )
 
 @router.delete("/{id}", response_model=EliminarMatricula, status_code=status.HTTP_200_OK)
-async def eliminar_matricula(id: int, db: Session = Depends(obtener_bd)):
+async def eliminar_matricula(id: int, db: Session = Depends(obtener_bd), usuario_actual: dict = Depends(obtener_usuario_actual)):
     try: 
         matricula = db.query(Matriculas).filter_by(id = id).first()
         if not matricula:
