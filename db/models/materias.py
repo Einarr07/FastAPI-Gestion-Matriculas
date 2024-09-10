@@ -1,11 +1,11 @@
-from sqlalchemy import Column, String, Integer
+from sqlalchemy import Column, String, BigInteger, Integer
 from sqlalchemy.orm import relationship
 from ..conexion import Base
 
 class Materias(Base):
     __tablename__ = "materias"  
     
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     nombre = Column(String(20), nullable=False)
     codigo = Column(Integer, nullable=False, unique=True)
     descripcion = Column(String(200), nullable=False)

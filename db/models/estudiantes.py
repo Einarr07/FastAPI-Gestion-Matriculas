@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String, BigInteger, Date
+from sqlalchemy import Column, String, BigInteger, Date
 from sqlalchemy.orm import relationship
 from ..conexion import Base
 
 class Estudiantes(Base):
     __tablename__ = "estudiantes"
 
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    id = Column(BigInteger, primary_key=True, index=True, autoincrement=True)
     nombre = Column(String(20), nullable=False)
     apellido = Column(String(20), nullable=False)
     cedula = Column(BigInteger, nullable=False, unique=True)
