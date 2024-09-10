@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, BigInteger, Date
+from sqlalchemy import Column, BigInteger, String, Date
 from sqlalchemy.orm import relationship
 from ..conexion import Base
 
@@ -15,6 +15,5 @@ class Estudiantes(Base):
     telefono = Column(String(10), unique=True, nullable=False)
     email = Column(String(50), unique=True, nullable=False)
 
-    
     usuarios = relationship("Usuarios", back_populates="estudiantes")
     matriculas = relationship("Matriculas", back_populates="estudiante")

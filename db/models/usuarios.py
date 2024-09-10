@@ -1,7 +1,6 @@
-from sqlalchemy import Column, String, ForeignKey, BigInteger, Integer
+from sqlalchemy import Column, String, ForeignKey, BigInteger
 from sqlalchemy.orm import relationship
 from ..conexion import Base
-from .estudiantes import Estudiantes
 
 class Usuarios(Base):
     __tablename__ = "usuarios"
