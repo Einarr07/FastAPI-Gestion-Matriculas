@@ -6,6 +6,9 @@ Este proyecto es una aplicación web para gestionar matrículas de estudiantes e
 ## Modelo de la Base de datos
 Este es el diagrama de la base de datos utilizado para este proyecto.
 
+![image](https://github.com/user-attachments/assets/e7621f68-db4d-4a8c-9e8b-2493b671efc5)
+
+
 ## Estructura del proyecto
 - app/
   - main.py          # Archivo principal de la aplicación
@@ -69,5 +72,5 @@ para correr el servidor deberemos ingresar el siguiente comando:
 ```bash
 uvicorn main:app --reload
 ```
-### Créditos
-Desarrollado por Mateo Congo
+## Créditos
+Desarrollado por **Mateo Congo**
