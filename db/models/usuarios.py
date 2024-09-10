@@ -10,6 +10,3 @@ class Usuarios(Base):
     apellido = Column(String(20), nullable=False)
     email = Column(String(30), unique=True, nullable=False)
     password = Column(String(60), nullable=False)
-    id_estudiante = Column(BigInteger, ForeignKey("estudiantes.id"))
-
-    estudiantes = relationship("Estudiantes", back_populates="usuarios")

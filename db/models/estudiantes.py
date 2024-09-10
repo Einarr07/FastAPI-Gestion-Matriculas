@@ -15,5 +15,4 @@ class Estudiantes(Base):
     telefono = Column(String(10), unique=True, nullable=False)
     email = Column(String(50), unique=True, nullable=False)
 
-    usuarios = relationship("Usuarios", back_populates="estudiantes")
     matriculas = relationship("Matriculas", back_populates="estudiante")
